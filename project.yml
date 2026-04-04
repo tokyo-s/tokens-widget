@@ -1,0 +1,65 @@
+name: TokensWidget
+options:
+  minimumXcodeGenVersion: 2.42.0
+packages:
+  TokenUsageCore:
+    path: .
+targets:
+  TokensWidgetApp:
+    type: application
+    platform: macOS
+    deploymentTarget: "15.0"
+    info:
+      path: Config/App-Info.plist
+    entitlements:
+      path: Config/TokensWidgetApp.entitlements
+    sources:
+      - path: App/Sources
+      - path: SharedUI
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.vova.TokensWidget
+        PRODUCT_NAME: TokensWidget
+        SWIFT_VERSION: 6.0
+        MARKETING_VERSION: 0.1.0
+        CURRENT_PROJECT_VERSION: 1
+        CODE_SIGN_ENTITLEMENTS: Config/TokensWidgetApp.entitlements
+    dependencies:
+      - package: TokenUsageCore
+        product: TokenUsageCore
+      - target: TokensUsageWidgetExtension
+        embed: true
+        codeSign: true
+
+  TokensUsageWidgetExtension:
+    type: app-extension
+    platform: macOS
+    deploymentTarget: "15.0"
+    info:
+      path: Config/Widget-Info.plist
+    entitlements:
+      path: Config/TokensUsageWidget.entitlements
+    sources:
+      - path: Widget/Sources
+      - path: SharedUI
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.vova.TokensWidget.WidgetExtension
+        PRODUCT_NAME: TokensUsageWidgetExtension
+        SWIFT_VERSION: 6.0
+        MARKETING_VERSION: 0.1.0
+        CURRENT_PROJECT_VERSION: 1
+        CODE_SIGN_ENTITLEMENTS: Config/TokensUsageWidget.entitlements
+        APPLICATION_EXTENSION_API_ONLY: YES
+    dependencies:
+      - package: TokenUsageCore
+        product: TokenUsageCore
+
+schemes:
+  TokensWidget:
+    build:
+      targets:
+        TokensWidgetApp: all
+        TokensUsageWidgetExtension: all
+    run:
+      config: Debug
