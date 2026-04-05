@@ -27,6 +27,8 @@ public struct ClaudeSessionParser: Sendable {
         var updatedAt = Date.distantPast
         var tokens = TokenBreakdown.zero
         var models: Set<String> = []
+        var speed: String?
+        var serviceTier: String?
 
         for line in content.split(whereSeparator: \.isNewline) {
             guard let object = ParsingSupport.parseObject(from: String(line)) else {
@@ -53,16 +55,31 @@ public struct ClaudeSessionParser: Sendable {
             let outputTokens = ParsingSupport.integer(usage["output_tokens"])
             let cacheReadTokens = ParsingSupport.integer(usage["cache_read_input_tokens"])
             let cacheCreationTokens = ParsingSupport.integer(usage["cache_creation_input_tokens"])
+            let cacheCreation5mTokens = ParsingSupport.nestedInteger(
+                in: usage,
+                path: ["cache_creation", "ephemeral_5m_input_tokens"]
+            )
+            let cacheCreation1hTokens = ParsingSupport.nestedInteger(
+                in: usage,
+                path: ["cache_creation", "ephemeral_1h_input_tokens"]
+            )
             let totalTokens = inputTokens + outputTokens + cacheReadTokens + cacheCreationTokens
 
             tokens.inputTokens += inputTokens
             tokens.outputTokens += outputTokens
             tokens.cachedInputTokens += cacheReadTokens + cacheCreationTokens
             tokens.totalTokens += totalTokens
+            tokens.cacheReadTokens += cacheReadTokens
+            tokens.cacheCreationTokens += cacheCreationTokens
+            tokens.cacheCreation5mTokens += cacheCreation5mTokens
+            tokens.cacheCreation1hTokens += cacheCreation1hTokens
 
             if let model = ParsingSupport.string(message["model"]) {
                 models.insert(model)
             }
+
+            speed = ParsingSupport.string(usage["speed"]) ?? speed
+            serviceTier = ParsingSupport.string(usage["service_tier"]) ?? serviceTier
         }
 
         guard tokens.totalTokens > 0 else {
@@ -98,6 +115,9 @@ public struct ClaudeSessionParser: Sendable {
             startedAt: startedAt,
             updatedAt: updatedAt,
             tokens: tokens,
+            speed: speed,
+            serviceTier: serviceTier,
+            pricingNotes: models.count > 1 ? ["mixed_model_unpriced"] : [],
             metadata: [
                 "transcript_path": fileURL.path
             ]

@@ -29,31 +29,40 @@ struct TokensUsageProvider: TimelineProvider {
 
 struct TokensUsageWidgetEntryView: View {
     var entry: TokensUsageProvider.Entry
+    var previewPresentation: UsageWidgetPresentation?
 
+    @Environment(\.widgetRenderingMode) private var widgetRenderingMode
+    @Environment(\.showsWidgetContainerBackground) private var showsWidgetContainerBackground
+
+    private var presentation: UsageWidgetPresentation {
+        previewPresentation ?? UsageWidgetPresentation(
+            renderingMode: widgetRenderingMode,
+            showsContainerBackground: showsWidgetContainerBackground
+        )
+    }
+
+    private var palette: UsageWidgetPalette {
+        UsageTheme.widgetPalette(for: presentation)
+    }
+
+    @ViewBuilder
     var body: some View {
+        if let containerBackground = palette.containerBackground {
+            content
+                .containerBackground(containerBackground, for: .widget)
+        } else {
+            content
+        }
+    }
+
+    private var content: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Tokens")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.secondary)
-
-                    Text(entry.snapshot.totalTokens.formatted())
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(red: 0.10, green: 0.24, blue: 0.16))
-                }
+                metricColumn(title: "Tokens", value: entry.snapshot.totalTokens.formatted(), alignment: .leading)
 
                 Spacer()
 
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text("Sessions")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.secondary)
-
-                    Text(entry.snapshot.totalSessions.formatted())
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(red: 0.10, green: 0.24, blue: 0.16))
-                }
+                metricColumn(title: "Sessions", value: entry.snapshot.totalSessions.formatted(), alignment: .trailing)
             }
 
             ContributionMatrixView(
@@ -61,25 +70,46 @@ struct TokensUsageWidgetEntryView: View {
                 weeks: 18,
                 cellSize: 9,
                 cellSpacing: 3,
-                showMonthLabels: false
+                showMonthLabels: false,
+                style: palette.matrixStyle
             )
 
-            Text(entry.date.formatted(date: .abbreviated, time: .shortened))
-                .font(.system(size: 10, weight: .medium, design: .rounded))
-                .foregroundStyle(.secondary)
+            presentationDebugFooter
         }
         .padding(16)
-        .containerBackground(
-            LinearGradient(
-                colors: [
-                    Color(red: 0.97, green: 0.99, blue: 0.97),
-                    Color(red: 0.91, green: 0.96, blue: 0.92)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            ),
-            for: .widget
-        )
+    }
+
+    @ViewBuilder
+    private func metricColumn(title: String, value: String, alignment: HorizontalAlignment) -> some View {
+        VStack(alignment: alignment, spacing: 2) {
+            Text(title)
+                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .foregroundStyle(palette.labelColor)
+
+            if palette.accentPrimaryContent {
+                Text(value)
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .foregroundStyle(palette.valueColor)
+                    .widgetAccentable()
+            } else {
+                Text(value)
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .foregroundStyle(palette.valueColor)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var presentationDebugFooter: some View {
+        #if DEBUG
+        Text(presentation.debugDescription)
+            .font(.system(size: 9, weight: .semibold, design: .rounded))
+            .foregroundStyle(palette.timestampColor)
+            .lineLimit(1)
+            .minimumScaleFactor(0.75)
+        #else
+        EmptyView()
+        #endif
     }
 }
 
@@ -93,6 +123,85 @@ struct TokensUsageWidget: Widget {
         }
         .configurationDisplayName("Token Usage Matrix")
         .description("A GitHub-style heatmap showing Codex and Claude Code token activity.")
+        .containerBackgroundRemovable(true)
         .supportedFamilies([.systemMedium, .systemLarge])
     }
+}
+
+private struct TokensUsageWidgetPreviewCard: View {
+    let presentation: UsageWidgetPresentation
+
+    private let entry = TokensUsageEntry(date: .now, snapshot: .preview())
+
+    private var showsGlassSurface: Bool {
+        UsageTheme.widgetPalette(for: presentation).containerBackground == nil
+    }
+
+    var body: some View {
+        ZStack {
+            if showsGlassSurface {
+                RoundedRectangle(cornerRadius: 30, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.12, green: 0.15, blue: 0.13),
+                                Color(red: 0.18, green: 0.22, blue: 0.19)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 30, style: .continuous)
+                            .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+                    }
+                    .shadow(color: Color.black.opacity(0.22), radius: 16, y: 10)
+            }
+
+            TokensUsageWidgetEntryView(
+                entry: entry,
+                previewPresentation: presentation
+            )
+            .environment(\.widgetRenderingMode, presentation.renderingMode)
+            .frame(width: 360, height: 170)
+        }
+        .padding(18)
+        .background(Color(red: 0.08, green: 0.10, blue: 0.09))
+    }
+}
+
+#Preview("Widget Full Color") {
+    TokensUsageWidgetPreviewCard(
+        presentation: UsageWidgetPresentation(
+            renderingMode: .fullColor,
+            showsContainerBackground: true
+        )
+    )
+}
+
+#Preview("Widget Accented") {
+    TokensUsageWidgetPreviewCard(
+        presentation: UsageWidgetPresentation(
+            renderingMode: .accented,
+            showsContainerBackground: true
+        )
+    )
+}
+
+#Preview("Widget Background Removed") {
+    TokensUsageWidgetPreviewCard(
+        presentation: UsageWidgetPresentation(
+            renderingMode: .fullColor,
+            showsContainerBackground: false
+        )
+    )
+}
+
+#Preview("Widget Vibrant") {
+    TokensUsageWidgetPreviewCard(
+        presentation: UsageWidgetPresentation(
+            renderingMode: .vibrant,
+            showsContainerBackground: false
+        )
+    )
 }

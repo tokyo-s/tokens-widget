@@ -8,8 +8,10 @@ struct ContributionMatrixView: View {
     var cellSpacing: CGFloat = 4
     var showMonthLabels: Bool = true
     var showsHoverTooltip: Bool = false
+    var style: ContributionMatrixStyle = UsageTheme.Matrix.app
 
     @State private var hoveredCellID: String?
+    @State private var hoveredMonthKey: String?
 
     private let calendar: Calendar = {
         var calendar = Calendar(identifier: .gregorian)
@@ -66,15 +68,83 @@ struct ContributionMatrixView: View {
         Dictionary(uniqueKeysWithValues: columns.flatMap(\.cells).map { ($0.id, $0) })
     }
 
+    private var monthAggregates: [String: (tokens: Int, cost: Decimal?)] {
+        var result: [String: (tokens: Int, cost: Decimal?)] = [:]
+        for column in columns {
+            for cell in column.cells {
+                let key = monthKey(for: cell.date)
+                guard !cell.isFuture else { continue }
+                let aggregate = totalsByDay[cell.date]
+                var existing = result[key, default: (tokens: 0, cost: Decimal(0))]
+                existing.tokens += cell.tokens
+                if let dayCost = aggregate?.estimatedCost {
+                    existing.cost = (existing.cost ?? 0) + dayCost
+                }
+                result[key] = existing
+            }
+        }
+        return result
+    }
+
+    private func monthKey(for date: Date) -> String {
+        let year = calendar.component(.year, from: date)
+        let month = calendar.component(.month, from: date)
+        return "\(year)-\(month)"
+    }
+
+    private func monthTooltip(for key: String) -> String {
+        guard let agg = monthAggregates[key] else { return "" }
+        let parts = key.split(separator: "-")
+        guard parts.count == 2,
+              let year = Int(parts[0]),
+              let month = Int(parts[1]) else { return "" }
+
+        var comps = DateComponents()
+        comps.year = year
+        comps.month = month
+        comps.day = 1
+        let label = calendar.date(from: comps)?
+            .formatted(.dateTime.month(.wide).year()) ?? key
+
+        let tokensLine = "\(label): \(agg.tokens.formatted()) \(agg.tokens == 1 ? "token" : "tokens")"
+        let costLine: String
+        if let cost = agg.cost {
+            costLine = "Estimated Cost: \(matrixFormattedCurrency(cost))"
+        } else {
+            costLine = "Estimated Cost: \(matrixFormattedCurrency(.zero))"
+        }
+        return "\(tokensLine)\n\(costLine)"
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             if showMonthLabels {
                 HStack(alignment: .bottom, spacing: cellSpacing) {
                     ForEach(columns) { column in
-                        Text(column.monthLabel ?? "")
-                            .font(.system(size: 10, weight: .medium, design: .rounded))
-                            .foregroundStyle(.secondary)
-                            .frame(width: cellSize, alignment: .leading)
+                        ZStack(alignment: .leading) {
+                            if let monthLabel = column.monthLabel,
+                               let firstDate = column.firstDate {
+                                let key = monthKey(for: firstDate)
+                                Text(monthLabel)
+                                    .font(.system(size: 10, weight: .medium, design: .rounded))
+                                    .foregroundStyle(style.monthLabelColor)
+                                    .lineLimit(1)
+                                    .fixedSize(horizontal: true, vertical: false)
+                                    .contentShape(Rectangle())
+                                    .anchorPreference(key: MatrixCellBoundsPreferenceKey.self, value: .bounds) {
+                                        [key: $0]
+                                    }
+                                    .onHover { isHovering in
+                                        guard showsHoverTooltip else { return }
+                                        if isHovering {
+                                            hoveredMonthKey = key
+                                        } else if hoveredMonthKey == key {
+                                            hoveredMonthKey = nil
+                                        }
+                                    }
+                            }
+                        }
+                        .frame(width: cellSize, alignment: .leading)
                     }
                 }
             }
@@ -83,27 +153,7 @@ struct ContributionMatrixView: View {
                 ForEach(columns) { column in
                     VStack(spacing: cellSpacing) {
                         ForEach(column.cells) { cell in
-                            RoundedRectangle(cornerRadius: 3, style: .continuous)
-                                .fill(color(for: cell))
-                                .frame(width: cellSize, height: cellSize)
-                                .overlay {
-                                    RoundedRectangle(cornerRadius: 3, style: .continuous)
-                                        .strokeBorder(Color.black.opacity(0.06), lineWidth: 0.5)
-                                }
-                                .accessibilityLabel(tooltip(for: cell))
-                                .contentShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
-                                .anchorPreference(key: MatrixCellBoundsPreferenceKey.self, value: .bounds) {
-                                    [cell.id: $0]
-                                }
-                                .onHover { isHovering in
-                                    guard showsHoverTooltip else { return }
-
-                                    if isHovering {
-                                        hoveredCellID = cell.id
-                                    } else if hoveredCellID == cell.id {
-                                        hoveredCellID = nil
-                                    }
-                                }
+                            cellView(for: cell)
                         }
                     }
                 }
@@ -119,7 +169,19 @@ struct ContributionMatrixView: View {
                 {
                     let rect = proxy[bounds]
 
-                    MatrixTooltipView(text: tooltip(for: hoveredCell))
+                    MatrixTooltipView(text: tooltip(for: hoveredCell), style: style)
+                        .offset(x: rect.maxX, y: rect.minY - 30)
+                        .allowsHitTesting(false)
+                }
+
+                if
+                    showsHoverTooltip,
+                    let hoveredMonthKey,
+                    let bounds = boundsByID[hoveredMonthKey]
+                {
+                    let rect = proxy[bounds]
+
+                    MatrixTooltipView(text: monthTooltip(for: hoveredMonthKey), style: style)
                         .offset(x: rect.maxX, y: rect.minY - 30)
                         .allowsHitTesting(false)
                 }
@@ -127,35 +189,64 @@ struct ContributionMatrixView: View {
         }
     }
 
-    private func color(for cell: MatrixCell) -> Color {
-        if cell.isFuture {
-            return Color.white.opacity(0.3)
-        }
-
+    private func appearance(for cell: MatrixCell) -> ContributionMatrixCellAppearance {
         let normalized = Double(cell.tokens) / Double(maxTokens)
+        return style.appearance(for: normalized, isFuture: cell.isFuture)
+    }
 
-        switch normalized {
-        case ..<0.01:
-            return Color(red: 0.90, green: 0.94, blue: 0.92)
-        case ..<0.25:
-            return Color(red: 0.70, green: 0.85, blue: 0.67)
-        case ..<0.5:
-            return Color(red: 0.39, green: 0.73, blue: 0.47)
-        case ..<0.75:
-            return Color(red: 0.18, green: 0.58, blue: 0.32)
-        default:
-            return Color(red: 0.05, green: 0.33, blue: 0.16)
+    @ViewBuilder
+    private func cellView(for cell: MatrixCell) -> some View {
+        let appearance = appearance(for: cell)
+        let cellBody = RoundedRectangle(cornerRadius: 3, style: .continuous)
+            .fill(appearance.fillColor)
+            .frame(width: cellSize, height: cellSize)
+            .overlay {
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                    .strokeBorder(appearance.borderColor, lineWidth: style.cellBorderWidth)
+            }
+            .scaleEffect(appearance.scale)
+            .accessibilityLabel(tooltip(for: cell))
+            .contentShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
+            .anchorPreference(key: MatrixCellBoundsPreferenceKey.self, value: .bounds) {
+                [cell.id: $0]
+            }
+            .onHover { isHovering in
+                guard showsHoverTooltip else { return }
+
+                if isHovering {
+                    hoveredCellID = cell.id
+                } else if hoveredCellID == cell.id {
+                    hoveredCellID = nil
+                }
+            }
+
+        if style.accentBySystem {
+            cellBody.widgetAccentable()
+        } else {
+            cellBody
         }
     }
 
     private func tooltip(for cell: MatrixCell) -> String {
         let day = cell.date.formatted(date: .long, time: .omitted)
+        let aggregate = totalsByDay[cell.date]
 
         if cell.isFuture {
             return "\(day): not included in this snapshot yet"
         }
 
-        return "\(day): \(cell.tokens.formatted()) \(cell.tokens == 1 ? "token" : "tokens")"
+        let tokensLine = "\(day): \(cell.tokens.formatted()) \(cell.tokens == 1 ? "token" : "tokens")"
+        let costLine: String
+
+        if let estimatedCost = aggregate?.estimatedCost {
+            costLine = "Estimated Cost: \(matrixFormattedCurrency(estimatedCost))"
+        } else if aggregate == nil {
+            costLine = "Estimated Cost: \(matrixFormattedCurrency(.zero))"
+        } else {
+            costLine = "Estimated Cost: Unavailable"
+        }
+
+        return "\(tokensLine)\n\(costLine)"
     }
 
     private func startOfWeek(for date: Date) -> Date {
@@ -189,22 +280,35 @@ private struct MatrixCell: Identifiable {
 
 private struct MatrixTooltipView: View {
     let text: String
+    let style: ContributionMatrixStyle
 
     var body: some View {
         Text(text)
             .font(.system(size: 12, weight: .medium, design: .rounded))
-            .foregroundStyle(Color(red: 0.10, green: 0.24, blue: 0.16))
+            .foregroundStyle(style.tooltipTextColor)
+            .multilineTextAlignment(.leading)
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(Color.white.opacity(0.96), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .background(style.tooltipBackgroundColor, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .strokeBorder(Color.black.opacity(0.08), lineWidth: 1)
+                    .strokeBorder(style.tooltipBorderColor, lineWidth: 1)
             }
             .shadow(color: Color.black.opacity(0.12), radius: 14, y: 6)
             .fixedSize()
             .padding(4)
     }
+}
+
+private func matrixFormattedCurrency(_ amount: Decimal) -> String {
+    let formatter = NumberFormatter()
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.numberStyle = .currency
+    formatter.currencyCode = "USD"
+    formatter.currencySymbol = "$"
+    formatter.minimumFractionDigits = 2
+    formatter.maximumFractionDigits = 2
+    return formatter.string(from: NSDecimalNumber(decimal: amount)) ?? "$0.00"
 }
 
 private struct MatrixCellBoundsPreferenceKey: PreferenceKey {

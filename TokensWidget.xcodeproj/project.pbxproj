@@ -10,6 +10,7 @@
 		212927F8092E25DE87365611 /* TokenUsageCore in Frameworks */ = {isa = PBXBuildFile; productRef = 7F473D8A2B8D374430366383 /* TokenUsageCore */; };
 		2957BA8D520807AFE0D967E1 /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8673FB5AF2C1D4FCFE183B3 /* AppConfiguration.swift */; };
 		3CF3F279BAA04E4023A8C7D7 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B93E97318BF39D0A38924BB8 /* RootView.swift */; };
+		41D4E700BD58A7B417F8E719 /* UsageTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56215942018C00BA1A7761AF /* UsageTheme.swift */; };
 		4346AC07E33248ACC9198E07 /* BookmarkStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C577C8CFCFE6EC59F5A54A0 /* BookmarkStore.swift */; };
 		66690A8C72534E4B06658095 /* TrackedSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53AD9B9561F6EA25B71E7710 /* TrackedSource.swift */; };
 		6D413E37F99CA7A87720036F /* TokensWidgetApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3453416B2DB4581EA66629FF /* TokensWidgetApp.swift */; };
@@ -20,6 +21,7 @@
 		C0F95D8AC40B2CC57D0AEE3D /* AppViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E1F80262BB82E267A1659BD /* AppViewModel.swift */; };
 		CCA38A13FE99CC534B77034B /* SharedSnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 500D90585DBECBAA9E6649D0 /* SharedSnapshotStore.swift */; };
 		D23E6631A1CED9851665842F /* ContributionMatrixView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11058DCF45AB4331829AC309 /* ContributionMatrixView.swift */; };
+		D784AC544DE45BAA95BE52D0 /* UsageTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56215942018C00BA1A7761AF /* UsageTheme.swift */; };
 		D9F00FBDA3C3A919DE19242B /* TokensUsageWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 801B67D1DD19BFE363AB3351 /* TokensUsageWidgetExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		ECEFAB79B4567A38498D0C8B /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8673FB5AF2C1D4FCFE183B3 /* AppConfiguration.swift */; };
 /* End PBXBuildFile section */
@@ -55,6 +57,7 @@
 		3453416B2DB4581EA66629FF /* TokensWidgetApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokensWidgetApp.swift; sourceTree = "<group>"; };
 		500D90585DBECBAA9E6649D0 /* SharedSnapshotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedSnapshotStore.swift; sourceTree = "<group>"; };
 		53AD9B9561F6EA25B71E7710 /* TrackedSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackedSource.swift; sourceTree = "<group>"; };
+		56215942018C00BA1A7761AF /* UsageTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageTheme.swift; sourceTree = "<group>"; };
 		6E1F80262BB82E267A1659BD /* AppViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppViewModel.swift; sourceTree = "<group>"; };
 		801B67D1DD19BFE363AB3351 /* TokensUsageWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TokensUsageWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A8673FB5AF2C1D4FCFE183B3 /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
@@ -107,6 +110,7 @@
 				A8673FB5AF2C1D4FCFE183B3 /* AppConfiguration.swift */,
 				11058DCF45AB4331829AC309 /* ContributionMatrixView.swift */,
 				500D90585DBECBAA9E6649D0 /* SharedSnapshotStore.swift */,
+				56215942018C00BA1A7761AF /* UsageTheme.swift */,
 			);
 			path = SharedUI;
 			sourceTree = "<group>";
@@ -255,6 +259,7 @@
 				9EE303EA4552215B209E27AD /* SharedSnapshotStore.swift in Sources */,
 				6D413E37F99CA7A87720036F /* TokensWidgetApp.swift in Sources */,
 				66690A8C72534E4B06658095 /* TrackedSource.swift in Sources */,
+				41D4E700BD58A7B417F8E719 /* UsageTheme.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -266,6 +271,7 @@
 				B48B7A818B0D2EEF4F06132A /* ContributionMatrixView.swift in Sources */,
 				CCA38A13FE99CC534B77034B /* SharedSnapshotStore.swift in Sources */,
 				787C491D9915CFB859ACCEF4 /* TokensUsageWidget.swift in Sources */,
+				D784AC544DE45BAA95BE52D0 /* UsageTheme.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

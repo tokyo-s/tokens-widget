@@ -34,6 +34,28 @@ enum ParsingSupport {
         value as? [String: Any]
     }
 
+    static func value(at path: [String], in object: [String: Any]) -> Any? {
+        var current: Any? = object
+
+        for component in path {
+            guard let dictionary = current as? [String: Any] else {
+                return nil
+            }
+
+            current = dictionary[component]
+        }
+
+        return current
+    }
+
+    static func nestedString(in object: [String: Any], path: [String]) -> String? {
+        string(value(at: path, in: object))
+    }
+
+    static func nestedInteger(in object: [String: Any], path: [String]) -> Int {
+        integer(value(at: path, in: object))
+    }
+
     static func parseTimestamp(_ rawValue: String?) -> Date? {
         guard let rawValue else { return nil }
 

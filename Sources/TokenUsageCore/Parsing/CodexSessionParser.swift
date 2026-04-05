@@ -27,6 +27,7 @@ public struct CodexSessionParser: Sendable {
         var originator: String?
         var rawSurface: String?
         var model: String?
+        var reasoningEffort: String?
         var finalTokens: TokenBreakdown?
 
         for line in content.split(whereSeparator: \.isNewline) {
@@ -54,6 +55,19 @@ public struct CodexSessionParser: Sendable {
                 originator = ParsingSupport.string(payload["originator"]) ?? originator
                 rawSurface = ParsingSupport.string(payload["source"]) ?? rawSurface
                 model = ParsingSupport.string(payload["model"]) ?? model
+
+            case "turn_context":
+                guard let payload = ParsingSupport.dictionary(object["payload"]) else {
+                    continue
+                }
+
+                model = ParsingSupport.string(payload["model"]) ?? model
+                reasoningEffort = ParsingSupport.string(payload["effort"])
+                    ?? ParsingSupport.nestedString(
+                        in: payload,
+                        path: ["collaboration_mode", "settings", "reasoning_effort"]
+                    )
+                    ?? reasoningEffort
 
             case "event_msg":
                 guard let payload = ParsingSupport.dictionary(object["payload"]),
@@ -103,6 +117,7 @@ public struct CodexSessionParser: Sendable {
             startedAt: startedAt,
             updatedAt: updatedAt,
             tokens: finalTokens,
+            reasoningEffort: reasoningEffort,
             metadata: [
                 "transcript_path": fileURL.path
             ]
