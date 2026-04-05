@@ -7,6 +7,9 @@ struct ContributionMatrixView: View {
     var cellSize: CGFloat = 12
     var cellSpacing: CGFloat = 4
     var showMonthLabels: Bool = true
+    var showsHoverTooltip: Bool = false
+
+    @State private var hoveredCellID: String?
 
     private let calendar: Calendar = {
         var calendar = Calendar(identifier: .gregorian)
@@ -20,6 +23,10 @@ struct ContributionMatrixView: View {
 
     private var totalsByDay: [Date: DailyUsageAggregate] {
         Dictionary(uniqueKeysWithValues: dailyTotals.map { (calendar.startOfDay(for: $0.date), $0) })
+    }
+
+    private var maxTokens: Int {
+        max(dailyTotals.map(\.totalTokens).max() ?? 1, 1)
     }
 
     private var columns: [MatrixColumn] {
@@ -55,6 +62,10 @@ struct ContributionMatrixView: View {
         }
     }
 
+    private var cellsByID: [String: MatrixCell] {
+        Dictionary(uniqueKeysWithValues: columns.flatMap(\.cells).map { ($0.id, $0) })
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             if showMonthLabels {
@@ -79,8 +90,38 @@ struct ContributionMatrixView: View {
                                     RoundedRectangle(cornerRadius: 3, style: .continuous)
                                         .strokeBorder(Color.black.opacity(0.06), lineWidth: 0.5)
                                 }
+                                .accessibilityLabel(tooltip(for: cell))
+                                .contentShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
+                                .anchorPreference(key: MatrixCellBoundsPreferenceKey.self, value: .bounds) {
+                                    [cell.id: $0]
+                                }
+                                .onHover { isHovering in
+                                    guard showsHoverTooltip else { return }
+
+                                    if isHovering {
+                                        hoveredCellID = cell.id
+                                    } else if hoveredCellID == cell.id {
+                                        hoveredCellID = nil
+                                    }
+                                }
                         }
                     }
+                }
+            }
+        }
+        .overlayPreferenceValue(MatrixCellBoundsPreferenceKey.self) { boundsByID in
+            GeometryReader { proxy in
+                if
+                    showsHoverTooltip,
+                    let hoveredCellID,
+                    let hoveredCell = cellsByID[hoveredCellID],
+                    let bounds = boundsByID[hoveredCellID]
+                {
+                    let rect = proxy[bounds]
+
+                    MatrixTooltipView(text: tooltip(for: hoveredCell))
+                        .offset(x: rect.maxX, y: rect.minY - 30)
+                        .allowsHitTesting(false)
                 }
             }
         }
@@ -91,7 +132,6 @@ struct ContributionMatrixView: View {
             return Color.white.opacity(0.3)
         }
 
-        let maxTokens = max(dailyTotals.map(\.totalTokens).max() ?? 1, 1)
         let normalized = Double(cell.tokens) / Double(maxTokens)
 
         switch normalized {
@@ -107,6 +147,17 @@ struct ContributionMatrixView: View {
             return Color(red: 0.05, green: 0.33, blue: 0.16)
         }
     }
+
+    private func tooltip(for cell: MatrixCell) -> String {
+        let day = cell.date.formatted(date: .long, time: .omitted)
+
+        if cell.isFuture {
+            return "\(day): not included in this snapshot yet"
+        }
+
+        return "\(day): \(cell.tokens.formatted()) \(cell.tokens == 1 ? "token" : "tokens")"
+    }
+
     private func startOfWeek(for date: Date) -> Date {
         guard let interval = calendar.dateInterval(of: .weekOfYear, for: date) else {
             return date
@@ -133,5 +184,33 @@ private struct MatrixCell: Identifiable {
 
     var id: String {
         date.formatted(.iso8601.year().month().day())
+    }
+}
+
+private struct MatrixTooltipView: View {
+    let text: String
+
+    var body: some View {
+        Text(text)
+            .font(.system(size: 12, weight: .medium, design: .rounded))
+            .foregroundStyle(Color(red: 0.10, green: 0.24, blue: 0.16))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Color.white.opacity(0.96), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(Color.black.opacity(0.08), lineWidth: 1)
+            }
+            .shadow(color: Color.black.opacity(0.12), radius: 14, y: 6)
+            .fixedSize()
+            .padding(4)
+    }
+}
+
+private struct MatrixCellBoundsPreferenceKey: PreferenceKey {
+    static let defaultValue: [String: Anchor<CGRect>] = [:]
+
+    static func reduce(value: inout [String: Anchor<CGRect>], nextValue: () -> [String: Anchor<CGRect>]) {
+        value.merge(nextValue(), uniquingKeysWith: { _, new in new })
     }
 }

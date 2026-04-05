@@ -98,11 +98,23 @@ struct RootView: View {
                 .foregroundStyle(Color(red: 0.10, green: 0.24, blue: 0.16))
 
             HStack(spacing: 16) {
-                MetricCard(title: "Total Tokens", value: snapshot.totalTokens.formatted())
-                MetricCard(title: "Sessions", value: snapshot.totalSessions.formatted())
                 MetricCard(
-                    title: "Last Activity",
-                    value: snapshot.latestActivityAt?.formatted(date: .abbreviated, time: .shortened) ?? "No data"
+                    title: "Total Tokens Imported",
+                    value: snapshot.totalTokens.formatted(),
+                    detail: "All tokens parsed from the connected Codex and Claude folders.",
+                    systemImage: "number.square.fill"
+                )
+                MetricCard(
+                    title: "Sessions Parsed",
+                    value: snapshot.totalSessions.formatted(),
+                    detail: "The number of individual usage sessions included in this snapshot.",
+                    systemImage: "rectangle.stack.person.crop.fill"
+                )
+                MetricCard(
+                    title: "Most Recent Activity",
+                    value: snapshot.latestActivityAt?.formatted(date: .abbreviated, time: .shortened) ?? "No data",
+                    detail: "The latest session timestamp found during the last import.",
+                    systemImage: "clock.fill"
                 )
             }
         }
@@ -120,7 +132,8 @@ struct RootView: View {
                     weeks: 30,
                     cellSize: 13,
                     cellSpacing: 4,
-                    showMonthLabels: true
+                    showMonthLabels: true,
+                    showsHoverTooltip: true
                 )
 
                 Text("Intensity scales to the busiest day in the currently imported snapshot.")
@@ -197,19 +210,26 @@ private struct SourceCard: View {
 private struct MetricCard: View {
     let title: String
     let value: String
+    let detail: String
+    let systemImage: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.system(size: 12, weight: .semibold, design: .rounded))
-                .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 12) {
+            Label(title, systemImage: systemImage)
+                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(red: 0.18, green: 0.33, blue: 0.24))
 
             Text(value)
                 .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundStyle(Color(red: 0.10, green: 0.24, blue: 0.16))
+
+            Text(detail)
+                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .foregroundStyle(Color(red: 0.31, green: 0.42, blue: 0.35))
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(18)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, minHeight: 148, alignment: .topLeading)
         .background(Color.white.opacity(0.86), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
     }
 }

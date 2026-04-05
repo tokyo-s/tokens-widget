@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
    LastUpgradeVersion = "1430"
-   wasCreatedForAppExtension = "YES"
-   version = "2.0">
+   version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
       buildImplicitDependencies = "YES">
@@ -45,9 +44,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "3371B28536EABA79949D540F"
-            BuildableName = "TokensUsageWidgetExtension.appex"
-            BlueprintName = "TokensUsageWidgetExtension"
+            BlueprintIdentifier = "657F4EAB7E9E4A65CE3C0789"
+            BuildableName = "TokensWidget.app"
+            BlueprintName = "TokensWidgetApp"
             ReferencedContainer = "container:TokensWidget.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -56,23 +55,21 @@
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
-      selectedDebuggerIdentifier = ""
-      selectedLauncherIdentifier = "Xcode.IDEFoundation.Launcher.PosixSpawn"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
-      askForAppToLaunch = "Yes"
       useCustomWorkingDirectory = "NO"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
-      allowLocationSimulation = "YES"
-      launchAutomaticallySubstyle = "2">
+      allowLocationSimulation = "YES">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "3371B28536EABA79949D540F"
-            BuildableName = "TokensUsageWidgetExtension.appex"
-            BlueprintName = "TokensUsageWidgetExtension"
+            BlueprintIdentifier = "657F4EAB7E9E4A65CE3C0789"
+            BuildableName = "TokensWidget.app"
+            BlueprintName = "TokensWidgetApp"
             ReferencedContainer = "container:TokensWidget.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -87,9 +84,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "3371B28536EABA79949D540F"
-            BuildableName = "TokensUsageWidgetExtension.appex"
-            BlueprintName = "TokensUsageWidgetExtension"
+            BlueprintIdentifier = "657F4EAB7E9E4A65CE3C0789"
+            BuildableName = "TokensWidget.app"
+            BlueprintName = "TokensWidgetApp"
             ReferencedContainer = "container:TokensWidget.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

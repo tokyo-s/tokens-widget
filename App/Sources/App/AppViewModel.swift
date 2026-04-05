@@ -49,6 +49,7 @@ final class AppViewModel: ObservableObject {
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.allowsMultipleSelection = false
+        panel.showsHiddenFiles = true
         panel.prompt = "Connect"
         panel.message = source.panelMessage
         panel.directoryURL = source.defaultDirectoryURL.deletingLastPathComponent()

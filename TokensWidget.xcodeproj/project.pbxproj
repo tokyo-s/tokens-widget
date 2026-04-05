@@ -345,6 +345,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = C6LVMWLWHU;
+				ENABLE_APP_SANDBOX = YES;
 				INFOPLIST_FILE = "Config/Widget-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -356,6 +357,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = dev.vova.TokensWidget.WidgetExtension;
 				PRODUCT_NAME = TokensUsageWidgetExtension;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = YES;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 6.0;
 			};
@@ -433,6 +435,8 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = C6LVMWLWHU;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
 				INFOPLIST_FILE = "Config/App-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -443,6 +447,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = dev.vova.TokensWidget;
 				PRODUCT_NAME = TokensWidget;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = YES;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 6.0;
 			};
@@ -458,6 +463,8 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = C6LVMWLWHU;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
 				INFOPLIST_FILE = "Config/App-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -468,6 +475,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = dev.vova.TokensWidget;
 				PRODUCT_NAME = TokensWidget;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = YES;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 6.0;
 			};
@@ -483,6 +491,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = C6LVMWLWHU;
+				ENABLE_APP_SANDBOX = YES;
 				INFOPLIST_FILE = "Config/Widget-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -494,6 +503,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = dev.vova.TokensWidget.WidgetExtension;
 				PRODUCT_NAME = TokensUsageWidgetExtension;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = YES;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 6.0;
 			};
